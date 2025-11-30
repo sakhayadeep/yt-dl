@@ -153,11 +153,9 @@ async function stopPython(timeoutMs = 5000) {
 
   console.log("Gracefully stopping backend...");
 
-  let attemptedGrace = false;
   try {
     // Try HTTP-based graceful shutdown if available
     if (typeof fetch === 'function') {
-      attemptedGrace = true;
       await fetch("http://127.0.0.1:5000/shutdown", { method: "POST" });
     }
   } catch (e) {
