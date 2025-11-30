@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 
 pack-resources/
 .vscode
+__pycache__/
