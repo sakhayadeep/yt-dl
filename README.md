@@ -1,111 +1,137 @@
-# YT-DL — Electron + FastAPI + React
+# **YT-DL — Electron + FastAPI + React**
 
-A small cross-platform desktop app that bundles a Python backend (FastAPI) and a React front-end inside an Electron shell.
-
-This README shows how to run the app in development and how to build it for production (using Electron Forge & PyInstaller).
-
----
-
-## 📦 Repo layout (important folders)
-- `electron/` — Electron main process & packaging helpers
-- `python-yt-dl/` — Python FastAPI backend (server & packaging scripts)
-- `react-yt-dl/` — React + Vite frontend
+A cross-platform desktop app that bundles a Python FastAPI backend and a React (Vite) frontend inside an Electron shell.
+This README explains how to run the project in development and how to build production binaries using **Electron Forge** and **PyInstaller**.
 
 ---
 
-## 🧰 Prerequisites
-- Node.js (recommended latest LTS / v18+ or above) and npm
-- Python 3.10+ (for `|` union types) and pip
-- PyInstaller installed if you plan to build the packaged Python executable:
-	- `python -m pip install --user pyinstaller` (or install in a virtualenv)
-- On Windows: `taskkill` is used by the launcher for force-kill fallback (builtin).
+## 📁 **Repository Structure**
+
+| Folder          | Description                                |
+| --------------- | ------------------------------------------ |
+| `electron/`     | Electron main process & packaging config   |
+| `python-yt-dl/` | Python FastAPI backend & packaging scripts |
+| `react-yt-dl/`  | React + Vite frontend                      |
 
 ---
 
-## 🚀 Development (fast iteration)
+## 🧰 **Requirements**
 
-Start the frontend dev server (Vite) using the root helper script in one terminal (recommended):
+* **Node.js** (LTS v18+ recommended) & npm
+* **Python 3.10+** + pip
+* **PyInstaller** (required for production build)
 
-```powershell
-npm install   # once, or use `npm ci` if you're using a lockfile
-npm run fe-dev   # from the repository root — starts the Vite dev server for react-yt-dl
-```
-
-Then start Electron (development) in the project root in a second terminal:
-
-```powershell
-npm install    # ensure root dev deps are installed (electron-forge etc.)
-npm run dev    # launches Electron (dev mode)
-```
-
-Notes:
- - The Electron dev launcher will automatically start the Python backend for you if it's not already running (it tries `python` then `python3`). In a typical workflow you'll use two terminals from the repo root:
-
-	1) `npm run fe-dev` (frontend — Vite)
-	2) `npm run dev` (Electron — auto-starts Python backend)
-- If you prefer to start Python manually (e.g. to enable a debug session), you can run it directly from the `python-yt-dl` folder:
-
-```powershell
-cd python-yt-dl
-python -m pip install -r requirements.txt   # optional
-python main.py
-```
-
-- Use DevTools (auto-opened in dev) to inspect renderer logs and network requests.
+  ```bash
+  python -m pip install --user pyinstaller
+  ```
+* **Windows only:** uses `taskkill` for fallback cleanup (built-in)
 
 ---
 
-## 🔧 Packaging / Production build
+## 🚀 **Development Setup**
 
-Packaging creates a single distributable for your platform via Electron Forge and PyInstaller.
+### **1. Start the React frontend**
 
 From the repo root:
 
-```powershell
-# 1) Install dependencies (one-time on CI / machine)
-npm install
-# 2) Build & package (this will run hooks that build the React UI and run PyInstaller)
-npm run make
+```bash
+npm install        # once (or npm ci with lockfile)
+npm run fe-dev     # starts Vite dev server for react-yt-dl
 ```
 
-What the `make` pipeline does (hooked in `forge.config.js`):
-- Builds the React app (via `react-yt-dl` build script)
-- Runs PyInstaller for the Python backend and stages the produced executable under `pack-resources/python-dist` so the packaged installer contains a runnable backend.
-- Packs everything with electron-forge
+### **2. Start Electron**
 
-After packaging inspect the output (example on Windows):
+In a second terminal at the repo root:
+
+```bash
+npm install        # ensure dev dependencies exist
+npm run dev        # launches Electron (auto-starts backend)
+```
+
+### Notes
+
+* Electron's dev launcher automatically starts the Python backend (tries `python` then `python3`).
+* Typical dev workflow:
+
+  1. `npm run fe-dev` — frontend
+  2. `npm run dev` — Electron + backend auto-launch
+* If you want to run the backend manually (e.g. debugging):
+
+  ```bash
+  cd python-yt-dl
+  python -m pip install -r requirements.txt
+  python main.py
+  ```
+
+---
+
+## 📦 **Packaging / Production Build**
+
+Creates a standalone distribution using Electron Forge + PyInstaller.
+
+From the repo root:
+
+```bash
+npm install         # one time per machine or CI
+npm run make        # builds React, runs PyInstaller, packages app
+```
+
+### What the build pipeline does
+
+* Builds the React app
+* Runs PyInstaller and places output under:
+
+  ```
+  pack-resources/python-dist
+  ```
+* Packages everything via Electron Forge
+
+### Example build output (Windows)
 
 ```
 out/yt-dl-win32-x64/resources/pack-resources/python-dist/main.exe
 out/yt-dl-win32-x64/resources/pack-resources/react-dist/index.html
 ```
 
-If packaging fails with messages about the backend executable missing, run the PyInstaller step manually inside `python-yt-dl` to inspect errors.
+If packaging fails, try PyInstaller manually:
 
----
-
-## 🧭 Troubleshooting + FAQ
-
-- `Blank window in dev`: Make sure the React dev server is running (http://localhost:5173). Check Electron DevTools and Electron stdout for did-fail-load messages.
-- `Packaged python executable not found`: PyInstaller likely failed to produce an exe — re-run it manually:
-
-```powershell
+```bash
 cd python-yt-dl
-pyinstaller --onefile main.py           # or python -m PyInstaller --onefile main.py
-ls dist\
+pyinstaller --onefile main.py
 ```
 
-- `Cannot start backend in dev`: ensure `python` or `python3` is on PATH. The app tries both names when launching the backend automatically.
-- `workers=1` removed: packaging runs PyInstaller to produce a single-file backend; the programmatic uvicorn server uses no worker processes so HTTP shutdown works reliably via /shutdown.
+---
+
+## 🧭 **Troubleshooting / FAQ**
+
+| Issue                               | Solution                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| Blank window in dev                 | Ensure Vite is running (`http://localhost:5173`) and check DevTools      |
+| Backend not found in packaged build | PyInstaller likely failed → run manually and inspect `dist/`             |
+| Backend fails to start in dev       | Confirm `python`/`python3` is available in PATH                          |
+| Shutdown issues / workers           | Uvicorn runs in single worker mode for clean shutdown in packaged builds |
 
 ---
 
-## 🧼 Cleanup notes
-- I recommend using a transient staging directory for builds (the project uses `pack-resources/*`) — if you want the build to be placed somewhere else we can standardize the layout.
+## 🧼 **Cleanup / Build Artifacts**
+
+Build staging output is stored in:
+
+```
+pack-resources/
+```
+
+You can change this if needed for CI or custom installers.
 
 ---
 
-If you'd like, I can add a tiny `scripts/smoke-test.js` that validates packaged artifacts exist and tries to run the backend for a few seconds — helpful for CI.
+## 🔧 Future / Improvements
 
-Happy to help add CI steps or a one-click build/test script next.
+If helpful, I can provide:
 
+* A `scripts/smoke-test.js` that verifies build output and test-runs the backend (useful for CI)
+* A one-click build/test script for local or CI environments
+
+---
+
+Thanks for checking out the project — feedback and improvements welcome!

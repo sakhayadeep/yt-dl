@@ -3,6 +3,7 @@ const { spawn, exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const getExecutableName = require("./utils/getExecutableName");
+const { shutdownBackend } = require("./utils/api");
 
 let pyProc = null;
 let mainWindow = null;
@@ -156,7 +157,7 @@ async function stopPython(timeoutMs = 5000) {
   try {
     // Try HTTP-based graceful shutdown if available
     if (typeof fetch === 'function') {
-      await fetch("http://127.0.0.1:5000/shutdown", { method: "POST" });
+      await shutdownBackend();
     }
   } catch (e) {
     console.log("Backend not responding to graceful shutdown", e);
