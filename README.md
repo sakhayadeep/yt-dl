@@ -125,13 +125,4 @@ You can change this if needed for CI or custom installers.
 
 ---
 
-## 🔧 Future / Improvements
-
-If helpful, I can provide:
-
-* A `scripts/smoke-test.js` that verifies build output and test-runs the backend (useful for CI)
-* A one-click build/test script for local or CI environments
-
----
-
 Thanks for checking out the project — feedback and improvements welcome!
